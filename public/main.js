@@ -85,6 +85,6 @@ loadImage('./images/simple.jpg', function(img) {
     backgroundImage = img;
 });
 
-loadImage('./images/Knights.png', function(img) {
+loadImage('./Knights.png', function(img) {
     spriteSheet = img;
 });
