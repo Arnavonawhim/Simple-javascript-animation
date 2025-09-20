@@ -81,10 +81,10 @@ document.getElementById('rightButton').addEventListener('click', function() {
     alert('Right path chosen!');
 });
 
-loadImage('public/images/simple.jpg', function(img) {
+loadImage('./images/simple.jpg', function(img) {
     backgroundImage = img;
 });
 
-loadImage('public/images/Knights.png', function(img) {
+loadImage('./images/Knights.png', function(img) {
     spriteSheet = img;
 });
