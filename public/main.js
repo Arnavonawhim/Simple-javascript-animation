@@ -4,7 +4,7 @@ const SPRITE_SCALE = 2;
 const BORDER_WIDTH = 1;
 const SPACING_WIDTH = 1;
 
-const GOKU_WIDTH = 120;
+const GOKU_WIDTH = 175;
 const GOKU_HEIGHT = 138;
 const GOKU_SCALE = 3;
 
@@ -24,21 +24,24 @@ let bg_x2 = canvas.width;
 let moving_left = false;
 let facing_left = false;
 let knight_black = false;
-let knight_row = 0;
+let knight_row = 7;
 let is_knight_hit = false;
 let goku_anim_complete = false;
 let distance_traveled = 0;
 let goku_h = GOKU_HEIGHT;
+let fight_hit_anim = false;
+let fight_hit_frame = 0;
+let fight_hit_counter = 0;
 
 const knight_start_x = (canvas.width / 2) - (SPRITE_WIDTH * SPRITE_SCALE / 2);
-const knight_moving_x = canvas.width * 0.65;
-const knight_encounter_x = canvas.width * 0.65;
+const knight_moving_x = canvas.width * 0.50;
+const knight_encounter_x = canvas.width * 0.50;
 const knight_y = canvas.height - (SPRITE_HEIGHT * SPRITE_SCALE) - 20;
 
 const goku_x = canvas.width * 0.15;
 const goku_y = canvas.height - (GOKU_HEIGHT * GOKU_SCALE) - 20;
 
-let current_frame = 0;
+let current_frame = 5;
 let frame_counter = 0;
 const frame_delay = 5;
 
@@ -115,16 +118,23 @@ function render() {
     }
 
     let display_knight_row = knight_row;
-    if (is_knight_hit) {
+    let knight_frame = Math.floor(current_frame);
+    
+    if (fight_hit_anim) {
+        display_knight_row = 1;
+        knight_frame = Math.min(Math.floor(fight_hit_frame) + 1, 3);
+    } else if (is_knight_hit) {
         display_knight_row = 11;
+    } else if (game_state === 'start') {
+        display_knight_row = 7;
+        knight_frame = 5;
     }
 
-    const knight_frame_pos = getSpritePosition(display_knight_row, Math.floor(current_frame));
+    const knight_frame_pos = getSpritePosition(display_knight_row, knight_frame);
     const knight_x = getCurrentKnightPosition();
     ctx.save();
     
-    const should_face_left = (game_state === 'moving_left');
-    const should_face_right = (game_state === 'moving_right');
+    const should_face_left = (game_state === 'moving_left') || (game_state === 'start' && facing_left);
     
     if (should_face_left) {
         ctx.scale(-1, 1);
@@ -161,10 +171,20 @@ function animate() {
     if (frame_counter >= frame_delay) {
         if (game_state === 'moving_left' || game_state === 'moving_right') {
             current_frame = (current_frame + 0.3) % 9;
-        } else if (game_state === 'start' && !is_knight_hit) {
-            current_frame = (current_frame + 0.1) % 3;
         }
         frame_counter = 0;
+    }
+
+    if (fight_hit_anim) {
+        fight_hit_counter++;
+        if (fight_hit_counter >= 10) {
+            fight_hit_frame += 0.3;
+            if (fight_hit_frame >= 3) {
+                fight_hit_anim = false;
+                game_state = 'gameover';
+            }
+            fight_hit_counter = 0;
+        }
     }
 
     if (game_state === 'encounter' || game_state === 'gameover') {
@@ -178,7 +198,8 @@ function animate() {
             } else {
                 if (goku_anim === 'fight') {
                     goku_anim_complete = true;
-                    game_state = 'gameover';
+                    fight_hit_anim = true;
+                    fight_hit_frame = 0;
                     goku_anim = 'idle';
                     goku_frame = 0;
                     goku_h = GOKU_HEIGHT;
@@ -252,13 +273,11 @@ function reset_to_start() {
     bg_x = 0;
     bg_x2 = canvas.width;
     moving_left = false;
-    facing_left = false;
-    knight_black = false;
-    knight_row = 0;
+    knight_row = 7;
     goku_anim = 'idle';
     goku_frame = 0;
     goku_anim_complete = false;
-    current_frame = 0;
+    current_frame = 5;
     distance_traveled = 0;
     goku_h = GOKU_HEIGHT;
     document.getElementById('leftButton').style.display = 'block';
@@ -268,6 +287,10 @@ function reset_to_start() {
 
 function full_reset() {
     is_knight_hit = false;
+    fight_hit_anim = false;
+    fight_hit_frame = 0;
+    fight_hit_counter = 0;
+    facing_left = false;
     reset_to_start();
 }
 
@@ -276,6 +299,8 @@ document.getElementById('leftButton').addEventListener('click', function() {
         game_state = 'moving_left';
         facing_left = true;
         moving_left = true;
+        knight_row = 0;
+        current_frame = 0;
     }
 });
 
@@ -288,7 +313,7 @@ document.getElementById('fightButton').addEventListener('click', function() {
         goku_anim = 'fight';
         goku_frame = 0;
         goku_anim_complete = false;
-        goku_h = 68;
+        goku_h = 170;
     }
 });
 
@@ -297,6 +322,9 @@ document.getElementById('runButton').addEventListener('click', function() {
         full_reset();
     } else if (is_knight_hit) {
         game_state = 'moving_right';
+        knight_row = 0;
+        current_frame = 0;
+        facing_left = false;
         document.getElementById('leftButton').style.display = 'none';
         document.getElementById('rightButton').style.display = 'none';
         document.getElementById('battleButtons').style.display = 'none';
