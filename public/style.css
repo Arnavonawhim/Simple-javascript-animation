@@ -39,7 +39,7 @@ body {
 }
 
 .left_button:hover, .right_button:hover {
-    background: linear-gradient(145deg, #4a4a6a, #2d2d44);
+    background-color: #4a4a6a;
     transform: translateY(-50%) scale(1.05);
     box-shadow: 0 6px 20px rgba(74, 74, 106, 0.4);
     border-color: #6a6a8a;
@@ -85,7 +85,7 @@ body {
 }
 
 .battle_button:hover {
-    background: linear-gradient(145deg, #4a4a6a, #2d2d44);
+    background-color: #4a4a6a;
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(74, 74, 106, 0.4);
     border-color: #6a6a8a;

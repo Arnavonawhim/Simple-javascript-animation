@@ -155,10 +155,10 @@ function render() {
     }
 
     if (game_state === 'gameover') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);  
         ctx.fillStyle = '#ff4444';
-        ctx.font = 'bold 48px Arial';
+        ctx.font = 'bold 49px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
         ctx.fillStyle = '#ffffff';
@@ -188,7 +188,7 @@ function render() {
     }
 
     if (game_state === 'void_win') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.87)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);  
         ctx.fillStyle = '#44ff44';
         ctx.font = 'bold 48px Arial';
