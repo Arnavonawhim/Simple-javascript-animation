@@ -3,9 +3,10 @@ body {
     padding: 0;
     background: #1a1a2e;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 76vh;
+    min-height: 100vh;
 }
 
 .game-div{
@@ -64,4 +65,32 @@ body {
     color: #ffffff;
     font-size: 27px;
     font-weight: bold;
+}
+
+.battle_buttons {
+    margin-top: 20px;
+    display: none;
+    gap: 20px;
+}
+
+.battle_button {
+    background-color: rgb(122, 155, 234);
+    border: 2px solid #4a4a6a;
+    color: #ffffff;
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease-in;
+}
+
+.battle_button:hover {
+    background: linear-gradient(145deg, #4a4a6a, #2d2d44);
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(74, 74, 106, 0.4);
+    border-color: #6a6a8a;
+}
+
+.battle_button:active {
+    transform: scale(0.95);
 }
