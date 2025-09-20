@@ -1,6 +1,6 @@
-const SPRITE_WIDTH = 150;
-const SPRITE_HEIGHT = 148;
-const SPRITE_SCALE = 2;
+const HOLLOW_WIDTH = 150;
+const HOLLOW_HEIGHT = 148;
+const HOLLOW_SCALE = 2;
 const BORDER_WIDTH = 1;
 const SPACING_WIDTH = 1;
 
@@ -19,24 +19,24 @@ let knight_sheet = null;
 let goku_sheet = null;
 
 let game_state = 'start';
-let bg_x = 0;
-let bg_x2 = canvas.width;
+let bg1 = 0;
+let bg2 = -canvas.width;
 let moving_left = false;
 let facing_left = false;
 let knight_black = false;
 let knight_row = 7;
 let is_knight_hit = false;
 let goku_anim_complete = false;
-let distance_traveled = 0;
+let dist_travelled = 0;
 let goku_h = GOKU_HEIGHT;
 let fight_hit_anim = false;
 let fight_hit_frame = 0;
 let fight_hit_counter = 0;
 
-const knight_start_x = (canvas.width / 2) - (SPRITE_WIDTH * SPRITE_SCALE / 2);
-const knight_moving_x = canvas.width * 0.50;
-const knight_encounter_x = canvas.width * 0.50;
-const knight_y = canvas.height - (SPRITE_HEIGHT * SPRITE_SCALE) - 20;
+const knight_start_1 = (canvas.width / 2) - (HOLLOW_WIDTH * HOLLOW_SCALE / 2);
+const knight_moving_2 = canvas.width * 0.50;
+const knight_encounter_3 = canvas.width * 0.50;
+const knight_y = canvas.height - (HOLLOW_HEIGHT * HOLLOW_SCALE) - 20;
 
 const goku_x = canvas.width * 0.15;
 const goku_y = canvas.height - (GOKU_HEIGHT * GOKU_SCALE) - 20;
@@ -55,25 +55,24 @@ let goku_anim_frames = {
     taunt: { row: 4, frames: [0, 1, 2, 3, 4, 5, 6, 7] }
 };
 
-function getSpritePosition(row, col) {
+function getHollowPosition(row, col) {
     return {
-        x: BORDER_WIDTH + col * (SPACING_WIDTH + SPRITE_WIDTH),
-        y: BORDER_WIDTH + row * (SPACING_WIDTH + SPRITE_HEIGHT)
+        x: BORDER_WIDTH + col * (SPACING_WIDTH + HOLLOW_WIDTH),
+        y: BORDER_WIDTH + row * (SPACING_WIDTH + HOLLOW_HEIGHT)
     };
 }
-
 function getGokuSpritePosition(row, col) {
     return {
         x: col * GOKU_WIDTH,
         y: row * goku_h
     };
 }
-
 function getCurrentKnightPosition() {
-    if (game_state === 'start') return knight_start_x;
-    if (game_state === 'moving_left' || game_state === 'moving_right') return knight_moving_x;
-    if (game_state === 'encounter' || game_state === 'gameover') return knight_encounter_x;
-    return knight_start_x;
+    if (game_state === 'start') return knight_start_1;
+    if (game_state === 'moving_left' || game_state === 'moving_right') return knight_moving_2;
+    if (game_state === 'encounter' || game_state === 'gameover') return knight_encounter_3;
+    if (game_state === 'void_room' || game_state === 'void_fail' || game_state === 'void_win') return knight_encounter_3;
+    return knight_start_1;
 }
 
 function loadImage(src, callback) {
@@ -98,8 +97,11 @@ function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     if (game_state === 'moving_left' || game_state === 'moving_right') {
-        ctx.drawImage(bg_image, bg_x, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
-        ctx.drawImage(bg_image, bg_x2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg_image, bg1, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg_image, bg2, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+    } else if (game_state === 'void_room' || game_state === 'void_fail' || game_state === 'void_win') {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
         ctx.drawImage(bg_image, 0, 0, canvas.width, canvas.height);
     }
@@ -117,38 +119,40 @@ function render() {
         );
     }
 
-    let display_knight_row = knight_row;
-    let knight_frame = Math.floor(current_frame);
-    
-    if (fight_hit_anim) {
-        display_knight_row = 1;
-        knight_frame = Math.min(Math.floor(fight_hit_frame) + 1, 3);
-    } else if (is_knight_hit) {
-        display_knight_row = 11;
-    } else if (game_state === 'start') {
-        display_knight_row = 7;
-        knight_frame = 5;
-    }
+    if (game_state !== 'void_fail' && game_state !== 'void_win') {
+        let display_knight_row = knight_row;
+        let knight_frame = Math.floor(current_frame);
+        
+        if (fight_hit_anim) {
+            display_knight_row = 1;
+            knight_frame = Math.min(Math.floor(fight_hit_frame) + 1, 3);
+        } else if (is_knight_hit) {
+            display_knight_row = 11;
+        } else if (game_state === 'start') {
+            display_knight_row = 7;
+            knight_frame = 5;
+        }
 
-    const knight_frame_pos = getSpritePosition(display_knight_row, knight_frame);
-    const knight_x = getCurrentKnightPosition();
-    ctx.save();
-    
-    const should_face_left = (game_state === 'moving_left') || (game_state === 'start' && facing_left);
-    
-    if (should_face_left) {
-        ctx.scale(-1, 1);
-        ctx.translate(-canvas.width, 0);
-    }
+        const knight_frame_pos = getHollowPosition(display_knight_row, knight_frame);
+        const knight_x = getCurrentKnightPosition();
+        ctx.save();
+        
+        const should_face_left = (game_state === 'moving_left') || (game_state === 'start' && facing_left) || (game_state === 'void_room' && facing_left);
+        
+        if (should_face_left) {
+            ctx.scale(-1, 1);
+            ctx.translate(-canvas.width, 0);
+        }
 
-    ctx.drawImage(
-        knight_sheet,
-        knight_frame_pos.x, knight_frame_pos.y,
-        SPRITE_WIDTH, SPRITE_HEIGHT,
-        should_face_left ? canvas.width - knight_x - (SPRITE_WIDTH * SPRITE_SCALE) : knight_x, knight_y,
-        SPRITE_WIDTH * SPRITE_SCALE, SPRITE_HEIGHT * SPRITE_SCALE
-    );
-    ctx.restore();
+        ctx.drawImage(
+            knight_sheet,
+            knight_frame_pos.x, knight_frame_pos.y,
+            HOLLOW_WIDTH, HOLLOW_HEIGHT,
+            should_face_left ? canvas.width - knight_x - (HOLLOW_WIDTH * HOLLOW_SCALE) : knight_x, knight_y,
+            HOLLOW_WIDTH * HOLLOW_SCALE, HOLLOW_HEIGHT * HOLLOW_SCALE
+        );
+        ctx.restore();
+    }
 
     if (game_state === 'gameover') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -162,7 +166,43 @@ function render() {
         ctx.fillText('You were destroyed by Goku', canvas.width / 2, canvas.height / 2);
         
         ctx.font = 'bold 18px Arial';
-        ctx.fillText('Click RUN to return to start', canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText('Click RESTART to return to start', canvas.width / 2, canvas.height / 2 + 40);
+    }
+
+    if (game_state === 'void_fail') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);  
+        ctx.fillStyle = '#ff4444';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText('To pass the void you must BE void', canvas.width / 2, canvas.height / 2);
+        
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText('Click RESTART to return to start', canvas.width / 2, canvas.height / 2 + 40);
+        
+        document.getElementById('battleButtons').style.display = 'flex';
+        document.getElementById('runButton').innerText = 'RESTART';
+    }
+
+    if (game_state === 'void_win') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);  
+        ctx.fillStyle = '#44ff44';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText('You have escaped', canvas.width / 2, canvas.height / 2);
+        
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText('Click RESTART to return to start', canvas.width / 2, canvas.height / 2 + 40);
+        
+        document.getElementById('battleButtons').style.display = 'flex';
+        document.getElementById('runButton').innerText = 'RESTART';
     }
 }
 
@@ -179,9 +219,8 @@ function animate() {
         fight_hit_counter++;
         if (fight_hit_counter >= 10) {
             fight_hit_frame += 0.3;
-            if (fight_hit_frame >= 3) {
-                fight_hit_anim = false;
-                game_state = 'gameover';
+            if (fight_hit_frame >= 2) {
+                fight_hit_frame = 2;
             }
             fight_hit_counter = 0;
         }
@@ -203,6 +242,10 @@ function animate() {
                     goku_anim = 'idle';
                     goku_frame = 0;
                     goku_h = GOKU_HEIGHT;
+                    setTimeout(() => {
+                        game_state = 'gameover';
+                        document.getElementById('runButton').innerText = 'RESTART';
+                    }, 800);
                 } else if (goku_anim === 'taunt') {
                     goku_anim_complete = true;
                     is_knight_hit = true;
@@ -217,45 +260,45 @@ function animate() {
     }
 
     if (game_state === 'moving_left') {
-        bg_x -= 4;
-        bg_x2 -= 4;
-        distance_traveled += 4;
+        bg1 -= 4;
+        bg2 -= 4;
+        dist_travelled += 4;
         
-        if (bg_x <= -canvas.width) {
-            bg_x = bg_x2 + canvas.width;
+        if (bg1 <= -canvas.width) {
+            bg1 = bg2 + canvas.width;
         }
-        if (bg_x2 <= -canvas.width) {
-            bg_x2 = bg_x + canvas.width;
+        if (bg2 <= -canvas.width) {
+            bg2 = bg1 + canvas.width;
         }
         
-        if (distance_traveled >= 300) {
+        if (dist_travelled >= 300) {
             game_state = 'encounter';
             document.getElementById('leftButton').style.display = 'none';
             document.getElementById('rightButton').style.display = 'none';
             document.getElementById('battleButtons').style.display = 'flex';
-            bg_x = 0;
-            bg_x2 = canvas.width;
+            bg1 = 0;
+            bg2 = -canvas.width;
             goku_anim = 'idle';
             goku_frame = 0;
             goku_anim_complete = false;
-            distance_traveled = 0;
+            dist_travelled = 0;
             current_frame = 0;
         }
     }
 
     if (game_state === 'moving_right') {
-        bg_x += 4;
-        bg_x2 += 4;
-        distance_traveled += 4;
+        bg1 += 4;
+        bg2 += 4;
+        dist_travelled += 4;
         
-        if (bg_x >= canvas.width) {
-            bg_x = bg_x2 - canvas.width;
+        if (bg1 >= canvas.width) {
+            bg1 = bg2 - canvas.width;
         }
-        if (bg_x2 >= canvas.width) {
-            bg_x2 = bg_x - canvas.width;
+        if (bg2 >= canvas.width) {
+            bg2 = bg1 - canvas.width;
         }
         
-        if (distance_traveled >= 300) {
+        if (dist_travelled >= 300) {
             reset_to_start();
         }
     }
@@ -270,19 +313,20 @@ function startGame() {
 
 function reset_to_start() {
     game_state = 'start';
-    bg_x = 0;
-    bg_x2 = canvas.width;
+    bg1 = 0;
+    bg2 = -canvas.width;
     moving_left = false;
     knight_row = 7;
     goku_anim = 'idle';
     goku_frame = 0;
     goku_anim_complete = false;
     current_frame = 5;
-    distance_traveled = 0;
+    dist_travelled = 0;
     goku_h = GOKU_HEIGHT;
     document.getElementById('leftButton').style.display = 'block';
     document.getElementById('rightButton').style.display = 'block';
     document.getElementById('battleButtons').style.display = 'none';
+    document.getElementById('runButton').innerText = 'RUN';
 }
 
 function full_reset() {
@@ -305,7 +349,34 @@ document.getElementById('leftButton').addEventListener('click', function() {
 });
 
 document.getElementById('rightButton').addEventListener('click', function() {
-    alert('Right path chosen!');
+    if (game_state === 'start') {
+        game_state = 'moving_right';
+        facing_left = false;
+        moving_left = false;
+        knight_row = 0;
+        current_frame = 0;
+        
+        setTimeout(() => {
+            game_state = 'void_room';
+            bg1 = 0;
+            bg2 = -canvas.width;
+            dist_travelled = 0;
+            current_frame = 0;
+            
+            setTimeout(() => {
+                if (is_knight_hit) {
+                    game_state = 'void_win';
+                    document.getElementById('runButton').innerText = 'RESTART';
+                } else {
+                    game_state = 'void_fail';
+                    document.getElementById('runButton').innerText = 'RESTART';
+                }
+                document.getElementById('leftButton').style.display = 'none';
+                document.getElementById('rightButton').style.display = 'none';
+                document.getElementById('battleButtons').style.display = 'none';
+            }, 1000);
+        }, 1200);
+    }
 });
 
 document.getElementById('fightButton').addEventListener('click', function() {
@@ -318,7 +389,10 @@ document.getElementById('fightButton').addEventListener('click', function() {
 });
 
 document.getElementById('runButton').addEventListener('click', function() {
-    if (game_state === 'gameover') {
+    if (game_state === 'gameover' || game_state === 'void_fail' || game_state === 'void_win') {
+        fight_hit_anim = false;
+        fight_hit_frame = 0;
+        fight_hit_counter = 0;
         full_reset();
     } else if (is_knight_hit) {
         game_state = 'moving_right';
@@ -328,7 +402,7 @@ document.getElementById('runButton').addEventListener('click', function() {
         document.getElementById('leftButton').style.display = 'none';
         document.getElementById('rightButton').style.display = 'none';
         document.getElementById('battleButtons').style.display = 'none';
-        distance_traveled = 0;
+        dist_travelled = 0;
     }
 });
 
@@ -340,7 +414,7 @@ document.getElementById('tauntButton').addEventListener('click', function() {
     }
 });
 
-loadImage('./images/simple.jpg', function(img) {
+loadImage('./images/walk.jpg', function(img) {
     bg_image = img;
 });
 
