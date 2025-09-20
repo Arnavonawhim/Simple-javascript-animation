@@ -1,5 +1,5 @@
 const SPRITE_WIDTH = 150;
-const SPRITE_HEIGHT = 150;
+const SPRITE_HEIGHT = 148;
 const SPRITE_SCALE = 2;
 const BORDER_WIDTH = 1;
 const SPACING_WIDTH = 1;
@@ -7,7 +7,7 @@ const SPACING_WIDTH = 1;
 let imagesLoaded = 0;
 const totalImages = 2;
 
-const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('Game');
 const ctx = canvas.getContext('2d');
 
 let backgroundImage = null;
@@ -37,7 +37,6 @@ function loadImage(src, callback) {
         }
     };
     img.onerror = function() {
-        console.error('Failed to load image:', src);
         imagesLoaded++;
         if (imagesLoaded === totalImages) {
             startGame();
