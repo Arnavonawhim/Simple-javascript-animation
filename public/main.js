@@ -316,7 +316,7 @@ loadImage('./images/simple.jpg', function(img) {
     bg_image = img;
 });
 
-loadImage('./Knights.png', function(img) {
+loadImage('./knights.png', function(img) {
     knight_sheet = img;
 });
 
